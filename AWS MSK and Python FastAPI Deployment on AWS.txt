@@ -1,0 +1,192 @@
+Step 1:
+------------
+Cretae VPC -- Name -- virtual-private-cloud  IPv4 CIDR -- 10.0.0.0/16
+Host address range -- 10.0.0.1 - 10.0.255.254
+
+Step 2:
+-----------
+Create 2 public subnets 
+Public-Subnet-A--10.0.0.0/24
+Host address range -- 10.0.0.1 - 10.0.0.254
+
+Public-Subnet-B--10.0.1.0/24
+Host address range -- 10.0.1.1 - 10.0.1.254
+
+Step 3:
+------------
+Check the default route table -- you will see the above 2 subnets have not been explicitly associated with any route tables and are therefore associated with the main route table.
+
+Step 4:
+------------
+Create a IGW & connect with VPC
+
+Step 5:
+------------
+Add the IGW in default route table
+
+
+Step 6:
+---------
+Launch MSK Cluster with vpc you created , unauthorised access allowed , plaintext enxryption
+(keep security group as it is)
+
+Step 7:
+------------
+Launch Linux EC2
+In the list Network choose the VPC previously created.
+In the list Auto-assign Public IP, choose Enable.
+
+Step 8:
+---------
+Once the client for Amazon MSK has been created, the security group rules must be configured to allow the connection between the cluster and the client that we have just created.
+
+For that , Add the security group id of ec2 to msk cluster security group all traffic
+
+Repeat these steps to add an inbound rule in the security group that corresponds to your client computer to allow it to receive traffic from the security group from the VPC. Now your client computer can communicate bidirectionally with the MSK Cluster.
+
+Once this is done, the newly created and configured client can be accessed.
+
+Step 9:
+-----------
+sudo yum install java-1.8.0-openjdk
+wget https://archive.apache.org/dist/kafka/2.8.1/kafka_2.12-2.8.1.tgz
+tar -xvf kafka_2.12-2.8.1.tgz
+cd kafka_2.12-2.8.1
+
+bin/kafka-topics.sh --list topics --bootstrap-server b-2.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092,b-3.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092,b-1.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092
+
+bin/kafka-topics.sh --create --topic order_details --bootstrap-server b-2.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092,b-3.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092,b-1.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092 --replication-factor 3 --partitions 6
+
+
+bin/kafka-topics.sh --create --topic processed-orders --bootstrap-server b-2.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092,b-3.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092,b-1.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092 --replication-factor 2 --partitions 1
+
+Step 10:
+-----------
+Start the kafka Producer
+---------------------------
+bin/kafka-console-producer.sh --topic order_details --bootstrap-server b-2.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092,b-3.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092,b-1.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092 
+
+In a new console start the kafka consumer--
+cd kafka_2.12-2.8.1
+bin/kafka-console-consumer.sh --topic order_details --bootstrap-server b-2.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092,b-3.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092,b-1.kafkafastapi.1cg0tw.c10.kafka.us-east-1.amazonaws.com:9092
+
+Step 11:
+-----------
+- SSH into EC2 instance and update installed packages with "sudo apt update && sudo apt upgrade -y"
+- Install pip with "sudo apt install python3-pip -y"
+- Install virtualenv with "sudo pip install virtualenv"
+- Install PostgreSQL with "sudo apt install postgresql postgresql-contrib -y"
+- Switch to postgres user with "su - postgres" and attempt connecting to the database with "psql -U postgres"
+- Create a password for the postgres user upon successful login with "\password postgres" and exit with "\q"
+- Navigate to the /etc/postgresql/14/main and use "ls" to confirm presence of pg_hba.conf and postgresql.conf
+- Open up postgresql.conf with "sudo vi postgresql.conf". Navigate to CONNECTION AND AUTHENTICATION, make the
+database accessible by anybody remotely by writing "listen_addresses = "*" or "COMPANY IP" to make it accessible by only the office
+and save the changes by pressing ESCAPE, : and wq
+-Open up pg_hba.conf with "sudo vi pg_hba.conf". Navigate to Database Administrative Login
+change authentication mode from "peer" to "md5", "127.0.0.1/32" to "0.0.0.0/0",change "::1/128" to "::/0" and exit
+Note: For changes to take place after editing config files for any application we run "systemctl restart postgresql"
+
+Step 12:
+-----------
+- Since it's not safe to run our app with root user, we'll create a user with root privileges
+- Create new user with "adduser username"
+- grant the new user root privileges with "usermod -aG sudo username"
+- Switch to the new user with "su - username"
+- Update installed packages on new user with "sudo apt upgrade"
+- Create a new folder for the application with "mkdir app", navigate to the new folder,
+create virtual environment with "virtualenv venv" and activate the virtual environment with
+"source venv/bin/activate".
+- Deactivate the virtual environment with "deactivate", create a new folder in app folder with "mkdir src",
+download our code from GitHub into the src folder with "git clone GitHub_URL ."
+- Navigate to app folder with "cd .." and reactivate virtual environment with "source venv/bin/activate"
+- Install all packages required for the app to run with "pip install -r requirements.txt". If
+errors are encountered, simply install the wanted packages/libraries that's missing by first
+deactivating the virtual environment and running "sudo apt install package_name"
+
+Step 13:
+-----------
+- Create PostgreSQL database on RDS
+a. Create PostgreSQL database on RDS and obtain credentials
+
+Step 14:
+-----------
+- Set the environment variables through the following
+a. Navigate to home with "cd ~", create an environment file with "touch .env", open the .env file
+with "vi .env", paste all environment variables (use PostgreSQL RDS credentials where necessary) 
+and save by pressing "ESCAPE KEY", ":" and "wq" and hit ENTER
+b. Navigate to home folder with "cd ~", open .profile with "vi .profile", scroll to the last line,
+paste "set -o allexport; source /home/username/.env; set +o all export" and save by pressing "ESCAPE KEY", ":" and "wq" and hit ENTER
+c. Reboot the system "sudo reboot"
+
+Step 15:
+a. Connect to PostgreSQL RDS database remotely via PgAdmin
+b. Create database with same database name in environment variables i.e., "fastapi"
+
+Step 16:
+a. Navigate to app folder and activate virtual environment with "source venv/bin/activate"
+b. Navigate to src folder and enter "alembic upgrade head" to use latest database schema
+c. Navigate to app folder with "cd ..", and run the app with "uvicorn --host 0.0.0.0 app.app:app"
+to listen to requests from any IP address.
+
+If app is running fine, we would proceed to deploy it with a process manager to enable it start automatically
+on its own anytime we reboot our system. The next steps will make this possible
+
+Step 17:
+a. install gunicorn with "pip install gunicorn" in the virtual environment
+b  install httptoos with "pip install httptools" and install uvloop with "pip install uvloop"
+c. Remove the existing requirements.txt file with "rm -r requirements.txt" and
+create a new requirements.txt file with "pip freeze > requirements.txt"
+c. Navigate to src folder with "cd src" and run the application with gunicorn -w no_of_workers(e.g., 4) -k uvicorn.workers.UvicornWorker app.app:app --bind 0.0.0.0:8000
+
+- Next we will run the app as a service 
+a. Preview the services installed on the machine by navigating "cd /etc/systemd/system/" and using "ls" to see them
+b. Change the content of gunicorn.service in GitHub with info below and replace username where necessary
+
+[Unit]
+Description=demo fastapi application
+After=network.target
+
+[Service]
+User=username
+Group=username
+WorkingDirectory=/home/username/app/src/
+Environment="PATH=/home/username/app/venv/bin"
+EnvironmentFile=/home/username/.env
+ExecStart=/home/username/app/venv/gunicorn -w no_of_workers(e.g., 4) -k uvicorn.workers.UvicornWorker app.app:app --bind 0.0.0.0:8000
+
+[Install]
+WantedBY=multi.user.target
+
+c. Navigate to system folder with "cd /etc/systemd/system", create/open the system file with "sudo vi fastapi.service"
+and paste the content above.
+d. Start service with "systemctl start fastapi"
+e. Check status of fastapi service with "systemctl status fastapi"
+f. Enable the service to start automatically after a reboot i.e., power failure with "sudo systemctl enable fastapi"
+
+Note: To restart the service after making changes to fastapi.service file, run "systemctl daemon-reload" and "systemctl restart fastapi"
+
+Step 18:
+- Integrate NGINX as a proxy so it'll process incoming requests before directing it to our app
+- Install a NGINX package
+a. Deactivate virtual environment with "deactivate", navigate to home folder with "cd ~" and enter
+"sudo apt install nginx -y"
+b. Start NGINX web server with "systemctl start nginx"
+c. Confirm if NGINX service is working by accessing the api homepage
+d. Navigate to "cd /etc/nginx/sites-available/" and use "cat default" 
+to see content of the default file
+e. Open the default file with "sudo vi default", scroll to the server JSON variable 
+and replace content of location wit the info below, save and exit
+
+		proxy_pass http://localhost:8000;
+                proxy_http_version 1.1;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $http_host;
+                proxy_set_header X-NginX-Proxy true;
+                proxy_redirect off;
+
+g. Restart NGINX with "systemctl restart nginx". Access FastAPI in browser to confirm it's working
+
+
